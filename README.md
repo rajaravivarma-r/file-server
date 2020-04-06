@@ -7,3 +7,4 @@
 ### Later
 [ ] Enable downloading an entire directory as a compressed zip file. Reference: https://stackoverflow.com/a/28060092/418473
 [ ] Use Static Typing
+[ ] Add favicon.ico
