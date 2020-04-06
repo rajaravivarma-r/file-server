@@ -1,5 +1,23 @@
+import sys
 import types
+from pathlib import Path
 from itertools import dropwhile, takewhile
+
+
+class PathDecorator:
+    def __init__(self, path):
+        self.path = path
+
+    @property
+    def name(self):
+        name = self.path.name
+        if self.path.is_dir():
+            name = name + "/"
+
+        return name
+
+    def is_hidden(self):
+        return self.path.name.startswith(".")
 
 
 def get_bottle_module():
@@ -26,10 +44,37 @@ def get_bottle_module():
 
 bottle = get_bottle_module()
 
+INDEX_PAGE = """
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>File Browser</title>
+</head>
+<body>
+<ul>
+%for node in contents:
+    <li>{{node.name}}</li>
+%end
+</ul>
+</body>
+</html>
+"""
+ROOT_PATH = sys.argv[1] or "/sdcard"
+print(ROOT_PATH)
 
-@bottle.route("/home")
-def home():
-    return "Welcome Home"
+
+@bottle.route("/")
+@bottle.route("/<file_or_dir_path:path>")
+def root():
+    root_path = Path(ROOT_PATH)
+    files_and_directories_in_path = [
+        PathDecorator(p) for p in root_path.iterdir()
+    ]
+    files_and_directories_in_path = filter(
+        lambda n: not n.is_hidden(), files_and_directories_in_path
+    )
+    return bottle.template(INDEX_PAGE, contents=files_and_directories_in_path)
 
 
 bottle.run(host="localhost", port=8080)
