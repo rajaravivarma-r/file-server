@@ -76,7 +76,13 @@ INDEX_PAGE = """
 """
 CSS = get_css()
 ROOT_PATH = sys.argv[1] or "/sdcard"
+
+fallback_upload_path = Path(ROOT_PATH).joinpath("uploads")
+fallback_upload_path.mkdir(parents=True, exist_ok=True)
+UPLOAD_PATH = sys.argv[2] if len(sys.argv) >= 3 else str(fallback_upload_path)
+
 print(f"\nServing from {ROOT_PATH}\n")
+print(f"\nUploads will be received to {UPLOAD_PATH}\n")
 
 
 def _root_layout(**contents):
@@ -90,6 +96,13 @@ def _render_directory_listing(path: Path):
         lambda n: not n.is_hidden(), files_and_directories_in_path
     )
     return _root_layout(contents=files_and_directories_in_path)
+
+
+@bottle.post("/upload")
+def upload():
+    upload = bottle.request.files.get("upload")
+    upload.save(UPLOAD_PATH)
+    return "OK"
 
 
 @bottle.get("/")
