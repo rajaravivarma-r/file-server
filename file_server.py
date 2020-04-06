@@ -44,25 +44,11 @@ def get_css():
 
 
 def get_bottle_module():
-    with open(__file__, "r") as f:
-        delimiter = "# BOTTLEPY"
-        framework_code = dropwhile(lambda l: l.strip() != delimiter, f)
-        # Skip the delimiter line
-        next(framework_code)
-        framework_code = "".join(
-            [
-                # Remove all the preceding comments
-                l.replace("# ", "", 1)
-                for l in takewhile(
-                    lambda l: l.strip() != delimiter, framework_code
-                )
-            ]
-        )
-
-        bottle_module = types.ModuleType("bottle")
-        bottle_module.__file__ = __file__
-        exec(framework_code, bottle_module.__dict__)
-        return bottle_module
+    framework_code = _content_between_delimiter("# BOTTLEPY")
+    bottle_module = types.ModuleType("bottle")
+    bottle_module.__file__ = __file__
+    exec(framework_code, bottle_module.__dict__)
+    return bottle_module
 
 
 bottle = get_bottle_module()
@@ -89,10 +75,8 @@ INDEX_PAGE = """
 </html>
 """
 CSS = get_css()
-print("Css is")
-print(CSS)
 ROOT_PATH = sys.argv[1] or "/sdcard"
-print(ROOT_PATH)
+print(f"\nServing from {ROOT_PATH}\n")
 
 
 def _root_layout(**contents):
@@ -111,19 +95,20 @@ def _render_directory_listing(path: Path):
 @bottle.get("/")
 @bottle.get("<path:path>")
 def root(path=ROOT_PATH):
-    print(f"Path is {path}")
     requested_path = Path(path)
-    if requested_path.is_dir():
-        print("Requested path is directory")
+    if requested_path.name == "favicon.ico":
+        bottle.abort(404)
+    elif requested_path.is_dir():
+        print(f"Serving directory {requested_path}")
         return _render_directory_listing(requested_path)
     else:
+        filename = requested_path.name
+        print(f"Serving file {filename}")
         return bottle.static_file(
             str(requested_path.relative_to(ROOT_PATH)),
             root=ROOT_PATH,
-            download=requested_path.name,
+            download=filename,
         )
-
-    return _render_directory_listing(requested_path)
 
 
 bottle.run(host="localhost", port=8080)
