@@ -110,7 +110,17 @@ def _root_layout(**contents):
 
 
 def _render_directory_listing(path: Path):
-    files_and_directories_in_path = [PathDecorator(p) for p in path.iterdir()]
+    files = []
+    dirs = []
+    # To split the dirs and files
+    for node in path.iterdir():
+        if node.is_dir():
+            dirs.append(node)
+        else:
+            files.append(node)
+
+    # Dirs come before files in the list
+    files_and_directories_in_path = [PathDecorator(p) for p in [*dirs, *files]]
     files_and_directories_in_path = filter(
         lambda n: not n.is_hidden(), files_and_directories_in_path
     )
@@ -5459,7 +5469,7 @@ bottle.run(host="localhost", port=8080)
 #   document.getElementById("status").innerHTML = "Upload Aborted";
 #   document.getElementById("status").innerHTML = "Ready!";
 # }
-# 
+#
 # function resetProgressInformation() {
 #   document.getElementById("progressBar").value = 0;
 # }
