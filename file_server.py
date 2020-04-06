@@ -43,6 +43,10 @@ def get_css():
     return _content_between_delimiter("# CSS")
 
 
+def get_js():
+    return _content_between_delimiter("# JS")
+
+
 def get_bottle_module():
     framework_code = _content_between_delimiter("# BOTTLEPY")
     bottle_module = types.ModuleType("bottle")
@@ -53,6 +57,7 @@ def get_bottle_module():
 
 bottle = get_bottle_module()
 
+
 INDEX_PAGE = """
 <!DOCTYPE html>
 <html>
@@ -62,8 +67,21 @@ INDEX_PAGE = """
 <style>
 {{CSS}}
 </style>
+ <script type="application/javascript">
+{{!JS}}
+</script>
 </head>
 <body>
+<h2>Upload File</h2>
+<form id="upload_form" enctype="multipart/form-data" method="post">
+  <input type="file" name="upload" id="upload_file"><br>
+  <input type="button" value="Send" onclick="uploadFile()">
+  <progress id="progressBar" value="0" max="100" style="width: 100%">
+  </progress>
+  <h3 id="status"></h3>
+  <p id="loaded_n_total"></p>
+</form>
+<br />
 <ul>
 %for node in contents:
     <li>
@@ -75,6 +93,7 @@ INDEX_PAGE = """
 </html>
 """
 CSS = get_css()
+JS = get_js()
 ROOT_PATH = sys.argv[1] or "/sdcard"
 
 fallback_upload_path = Path(ROOT_PATH).joinpath("uploads")
@@ -86,7 +105,7 @@ print(f"\nUploads will be received to {UPLOAD_PATH}\n")
 
 
 def _root_layout(**contents):
-    arguments = dict(CSS=CSS, **contents)
+    arguments = dict(CSS=CSS, JS=JS, **contents)
     return bottle.template(INDEX_PAGE, **arguments)
 
 
@@ -5403,3 +5422,45 @@ bottle.run(host="localhost", port=8080)
 #
 # /* Custom styles */
 # CSS
+# JS
+#
+# function uploadFile() {
+#   var file = document.getElementById("upload_file").files[0];
+#   // alert(file.name+" | "+file.size+" | "+file.type);
+#   var formdata = new FormData();
+#   formdata.append("upload", file);
+#   var ajax = new XMLHttpRequest();
+#   ajax.upload.addEventListener("progress", progressHandler, false);
+#   ajax.addEventListener("load", completeHandler, false);
+#   ajax.addEventListener("error", errorHandler, false);
+#   ajax.addEventListener("abort", abortHandler, false);
+#   ajax.open("POST", "/upload");
+#   ajax.send(formdata);
+# }
+#
+# function progressHandler(event) {
+#   let progress = "Uploaded " + event.loaded + " bytes of " + event.total;
+#   document.getElementById("loaded_n_total").innerHTML = progress;
+#   var percent = (event.loaded / event.total) * 100;
+#   document.getElementById("progressBar").value = Math.round(percent);
+#   let uploadStatus = Math.round(percent) + "% uploaded... please wait";
+#   document.getElementById("status").innerHTML = uploadStatus;
+# }
+#
+# function completeHandler(event) {
+#   document.getElementById("status").innerHTML = event.target.responseText;
+# }
+#
+# function errorHandler(event) {
+#   document.getElementById("status").innerHTML = "Upload Failed";
+# }
+#
+# function abortHandler(event) {
+#   document.getElementById("status").innerHTML = "Upload Aborted";
+#   document.getElementById("status").innerHTML = "Ready!";
+# }
+# 
+# function resetProgressInformation() {
+#   document.getElementById("progressBar").value = 0;
+# }
+# JS
