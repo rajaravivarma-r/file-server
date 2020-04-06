@@ -54,7 +54,9 @@ INDEX_PAGE = """
 <body>
 <ul>
 %for node in contents:
-    <li>{{node.name}}</li>
+    <li>
+    <a href="{{node.path}}">{{node.name}}</a>
+    </li>
 %end
 </ul>
 </body>
@@ -64,17 +66,28 @@ ROOT_PATH = sys.argv[1] or "/sdcard"
 print(ROOT_PATH)
 
 
-@bottle.route("/")
-@bottle.route("/<file_or_dir_path:path>")
-def root():
-    root_path = Path(ROOT_PATH)
-    files_and_directories_in_path = [
-        PathDecorator(p) for p in root_path.iterdir()
-    ]
+def _render_directory_listing(path: Path):
+    files_and_directories_in_path = [PathDecorator(p) for p in path.iterdir()]
     files_and_directories_in_path = filter(
         lambda n: not n.is_hidden(), files_and_directories_in_path
     )
     return bottle.template(INDEX_PAGE, contents=files_and_directories_in_path)
+
+
+@bottle.get("/")
+@bottle.get("<path:path>")
+def root(path=ROOT_PATH):
+    print(f"Path is {path}")
+    requested_path = Path(path)
+    if requested_path.is_dir():
+        print("Requested path is directory")
+        return _render_directory_listing(requested_path)
+    else:
+        return bottle.static_file(
+            str(requested_path.relative_to(ROOT_PATH)), root=ROOT_PATH
+        )
+
+    return _render_directory_listing(requested_path)
 
 
 bottle.run(host="localhost", port=8080)
