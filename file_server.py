@@ -84,7 +84,9 @@ def root(path=ROOT_PATH):
         return _render_directory_listing(requested_path)
     else:
         return bottle.static_file(
-            str(requested_path.relative_to(ROOT_PATH)), root=ROOT_PATH
+            str(requested_path.relative_to(ROOT_PATH)),
+            root=ROOT_PATH,
+            download=requested_path.name,
         )
 
     return _render_directory_listing(requested_path)
