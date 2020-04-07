@@ -153,7 +153,11 @@ def root(path=ROOT_PATH):
         )
 
 
-bottle.run(host="localhost", port=8080)
+def main():
+    bottle.run(host="localhost", port=8080)
+
+if __name__ == "__main__":
+    main()
 
 # FRAMEWORK EMBEDDED IN THE SAME FILE TO KEEP IT IN A SINGLE FILE
 # BOTTLEPY
