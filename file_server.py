@@ -94,7 +94,7 @@ INDEX_PAGE = """
 """
 CSS = get_css()
 JS = get_js()
-ROOT_PATH = sys.argv[1] or "/sdcard"
+ROOT_PATH = sys.argv[1] if 1 < len(sys.argv) else "/sdcard"
 
 fallback_upload_path = Path(ROOT_PATH).joinpath("uploads")
 fallback_upload_path.mkdir(parents=True, exist_ok=True)
