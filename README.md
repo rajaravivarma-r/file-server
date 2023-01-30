@@ -2,12 +2,12 @@
 
 ### Now
 [x] Use responsive design.
+[x] Enable sending multiple files
 
 [ ] Add integration tests
 
 [ ] Convert `bytes` to `mega bytes` for representing.
 
-[ ] Enable sending multiple files, by appending a new `file input` field once the user starts sending the first file.
 
 [ ] Make appropriate methods private
 
