@@ -75,12 +75,8 @@ INDEX_PAGE = """
 <body>
 <h2>Upload File</h2>
 <form id="upload_form" enctype="multipart/form-data" method="post">
-  <input type="file" name="upload" id="upload_file"><br>
+  <input type="file" name="upload" id="upload_file" multiple><br>
   <input type="button" value="Send" onclick="uploadFile()">
-  <progress id="progressBar" value="0" max="100" style="width: 100%">
-  </progress>
-  <h3 id="status"></h3>
-  <p id="loaded_n_total"></p>
 </form>
 <br />
 <ul>
@@ -132,7 +128,8 @@ def _render_directory_listing(path: Path):
 @bottle.post("/upload")
 def upload():
     upload = bottle.request.files.get("upload")
-    upload.save(UPLOAD_PATH)
+    # Read as 4MB chunks
+    upload.save(UPLOAD_PATH, chunk_size=(1024 * 1024 * 4))
     return "OK"
 
 
@@ -5440,43 +5437,76 @@ if __name__ == "__main__":
 # CSS
 # JS
 #
+# class UploadFile {
+#   constructor(file) {
+#     this.file = file;
+#     this.progressBar = this._createProgressBar();
+#     this.status = document.createElement("h3");
+#     this.loadedInTotal = document.createElement("p");
+#     this.progressStatusSection = document.createElement("div");
+#
+#     this.progressStatusSection.appendChild(this.progressBar);
+#     this.progressStatusSection.appendChild(this.status);
+#     this.progressStatusSection.appendChild(this.loadedInTotal);
+#   }
+#
+#   upload = (form) => {
+#     form.appendChild(this.progressStatusSection);
+#     let formdata = new FormData();
+#     formdata.append("upload", this.file);
+#     let ajax = new XMLHttpRequest();
+#     ajax.upload.addEventListener("progress", this._progressHandler, false);
+#     ajax.addEventListener("load", this._completeHandler, false);
+#     ajax.addEventListener("error", this._errorHandler, false);
+#     ajax.addEventListener("abort", this._abortHandler, false);
+#     ajax.open("POST", "/upload");
+#     ajax.send(formdata);
+#   };
+#
+#   _progressHandler = (event) => {
+#     const progress = "Uploaded " + event.loaded + " bytes of " + event.total;
+#     this.loadedInTotal.innerHTML = progress;
+#     const percent = (event.loaded / event.total) * 100;
+#     this.progressBar.value = Math.round(percent);
+#     const uploadStatus = Math.round(percent) + "% uploaded... please wait";
+#     this.status.innerHTML = uploadStatus;
+#   };
+#
+#   _completeHandler = (event) => {
+#     // document.getElementById("status").innerHTML = event.target.responseText;
+#     this.status.innerHTML = event.target.responseText;
+#   };
+#
+#   _errorHandler = (event) => {
+#     // document.getElementById("status").innerHTML = "Upload Failed";
+#     this.status.innerHTML = "Upload Failed";
+#   };
+#
+#   _abortHandler = (event) => {
+#     // document.getElementById("status").innerHTML = "Upload Aborted";
+#     // document.getElementById("status").innerHTML = "Ready!";
+#     this.status.innerHTML = "Upload Aborted! Now Ready for new uploads!";
+#   };
+#
+#   _resetProgressInformation = () => {
+#     // document.getElementById("progressBar").value = 0;
+#     this.progressBar.value = 0;
+#   };
+#
+#   _createProgressBar = () => {
+#     let progressBar = document.createElement("progress");
+#     progressBar.value = 0;
+#     progressBar.max = 100;
+#     progressBar.style = "width: 90%; margin: auto";
+#     return progressBar;
+#   };
+# }
+#
 # function uploadFile() {
-#   var file = document.getElementById("upload_file").files[0];
-#   // alert(file.name+" | "+file.size+" | "+file.type);
-#   var formdata = new FormData();
-#   formdata.append("upload", file);
-#   var ajax = new XMLHttpRequest();
-#   ajax.upload.addEventListener("progress", progressHandler, false);
-#   ajax.addEventListener("load", completeHandler, false);
-#   ajax.addEventListener("error", errorHandler, false);
-#   ajax.addEventListener("abort", abortHandler, false);
-#   ajax.open("POST", "/upload");
-#   ajax.send(formdata);
-# }
-#
-# function progressHandler(event) {
-#   let progress = "Uploaded " + event.loaded + " bytes of " + event.total;
-#   document.getElementById("loaded_n_total").innerHTML = progress;
-#   var percent = (event.loaded / event.total) * 100;
-#   document.getElementById("progressBar").value = Math.round(percent);
-#   let uploadStatus = Math.round(percent) + "% uploaded... please wait";
-#   document.getElementById("status").innerHTML = uploadStatus;
-# }
-#
-# function completeHandler(event) {
-#   document.getElementById("status").innerHTML = event.target.responseText;
-# }
-#
-# function errorHandler(event) {
-#   document.getElementById("status").innerHTML = "Upload Failed";
-# }
-#
-# function abortHandler(event) {
-#   document.getElementById("status").innerHTML = "Upload Aborted";
-#   document.getElementById("status").innerHTML = "Ready!";
-# }
-#
-# function resetProgressInformation() {
-#   document.getElementById("progressBar").value = 0;
+#   let files = document.getElementById("upload_file").files;
+#   for(let i = 0; i < files.length; i += 1) {
+#     const uploadFile = new UploadFile(files[i]);
+#     uploadFile.upload(document.getElementById('upload_form'));
+#   }
 # }
 # JS
