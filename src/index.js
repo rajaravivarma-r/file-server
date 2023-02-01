@@ -1,6 +1,7 @@
 class UploadFile {
-  constructor(file) {
+  constructor(file, targetDirectory = null) {
     this.file = file;
+    this.targetDirectory = targetDirectory;
     this.progressBar = this._createProgressBar();
     this.status = document.createElement("h3");
     this.loadedInTotal = document.createElement("p");
@@ -15,6 +16,9 @@ class UploadFile {
     form.appendChild(this.progressStatusSection);
     let formdata = new FormData();
     formdata.append("upload", this.file);
+    if (this.targetDirectory) {
+      formdata.append("target_directory", this.targetDirectory);
+    }
     let ajax = new XMLHttpRequest();
     ajax.upload.addEventListener("progress", this._progressHandler, false);
 
@@ -25,7 +29,7 @@ class UploadFile {
       };
 
       const errorCallback = (event) => {
-        this._errorHandler(event)
+        this._errorHandler(event);
         reject(form);
       };
 
@@ -84,13 +88,18 @@ class UploadFile {
 
 function uploadFile() {
   let files = document.getElementById("upload_file").files;
+  let targetDirectory = document.getElementById("target_directory").value;
   let promises = [];
   for (let i = 0; i < files.length; i += 1) {
-    const uploadFile = new UploadFile(files[i]);
+    const uploadFile = new UploadFile(files[i], targetDirectory);
     promises.push(uploadFile.upload(document.getElementById("upload_form")));
   }
   Promise.all(promises).then(
-    (forms) => { forms[0].reset() },
-    (forms) => { console.log("Error!") }
+    (forms) => {
+      forms[0].reset();
+    },
+    (forms) => {
+      console.log("Error!");
+    }
   );
 }

@@ -13,7 +13,12 @@
   <body>
     <h2>Upload File</h2>
     <form id="upload_form" enctype="multipart/form-data" method="post">
-      <input type="file" name="upload" id="upload_file" multiple><br>
+      <label>Target Directory:
+        <input type="text" name="target_directory" id="target_directory"/>
+      </label>
+      <label>Select Files:
+        <input type="file" name="upload" id="upload_file" multiple><br>
+      </label>
       <input type="button" value="Send" onclick="uploadFile()">
     </form>
     <br />

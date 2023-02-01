@@ -100,9 +100,14 @@ def _render_directory_listing(path: Path):
 
 @bottle.post("/upload")
 def upload():
+    target_directory = bottle.request.params.get('target_directory')
     upload = bottle.request.files.get("upload")
+    upload_path = UPLOAD_PATH
+    if target_directory:
+        upload_path = Path(UPLOAD_PATH).joinpath(target_directory)
+        upload_path.mkdir(parents=True, exist_ok=True)
     # Read as 4MB chunks
-    upload.save(UPLOAD_PATH, chunk_size=(1024 * 1024 * 4))
+    upload.save(str(upload_path), chunk_size=(1024 * 1024 * 4))
     return "OK"
 
 
