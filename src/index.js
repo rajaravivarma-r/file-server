@@ -17,11 +17,30 @@ class UploadFile {
     formdata.append("upload", this.file);
     let ajax = new XMLHttpRequest();
     ajax.upload.addEventListener("progress", this._progressHandler, false);
-    ajax.addEventListener("load", this._completeHandler, false);
-    ajax.addEventListener("error", this._errorHandler, false);
-    ajax.addEventListener("abort", this._abortHandler, false);
+
+    let promise = new Promise((resolve, reject) => {
+      const completeCallback = (event) => {
+        this._completeHandler(event);
+        resolve(form);
+      };
+
+      const errorCallback = (event) => {
+        this._errorHandler(event)
+        reject(form);
+      };
+
+      const abortCallback = (event) => {
+        this._abortHandler(event);
+        reject(form);
+      };
+
+      ajax.addEventListener("load", completeCallback, false);
+      ajax.addEventListener("error", errorCallback, false);
+      ajax.addEventListener("abort", abortCallback, false);
+    });
     ajax.open("POST", "/upload");
     ajax.send(formdata);
+    return promise;
   };
 
   _progressHandler = (event) => {
@@ -65,8 +84,13 @@ class UploadFile {
 
 function uploadFile() {
   let files = document.getElementById("upload_file").files;
-  for(let i = 0; i < files.length; i += 1) {
+  let promises = [];
+  for (let i = 0; i < files.length; i += 1) {
     const uploadFile = new UploadFile(files[i]);
-    uploadFile.upload(document.getElementById('upload_form'));
+    promises.push(uploadFile.upload(document.getElementById("upload_form")));
   }
+  Promise.all(promises).then(
+    (forms) => { forms[0].reset() },
+    (forms) => { console.log("Error!") }
+  );
 }
