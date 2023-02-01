@@ -62,3 +62,11 @@ class UploadFile {
     return progressBar;
   };
 }
+
+function uploadFile() {
+  let files = document.getElementById("upload_file").files;
+  for(let i = 0; i < files.length; i += 1) {
+    const uploadFile = new UploadFile(files[i]);
+    uploadFile.upload(document.getElementById('upload_form'));
+  }
+}
