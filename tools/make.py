@@ -44,7 +44,7 @@ def make():
         bottlepy=_read_as_comment(bottle_py_file),
     )
     consolidated_file = bottle.template(main_py_file.read_text(), **arguments)
-    new_file = current_dirpath.parent.joinpath("new_file_server.py")
+    new_file = current_dirpath.parent.joinpath("file_server.py")
     new_file.write_text(consolidated_file)
 
 
