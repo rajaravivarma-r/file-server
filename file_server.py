@@ -5064,7 +5064,7 @@ if __name__ == "__main__":
 #       };
 # 
 #       const errorCallback = (event) => {
-#         this._errorHandler(event)
+#         this._errorHandler(event);
 #         reject(form);
 #       };
 # 
@@ -5130,8 +5130,12 @@ if __name__ == "__main__":
 #     promises.push(uploadFile.upload(document.getElementById("upload_form")));
 #   }
 #   Promise.all(promises).then(
-#     (forms) => { forms[0].reset() },
-#     (forms) => { console.log("Error!") }
+#     (forms) => {
+#       forms[0].reset();
+#     },
+#     (forms) => {
+#       console.log("Error!");
+#     }
 #   );
 # }
 # JS
